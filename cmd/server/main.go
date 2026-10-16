@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"urlshortener/internal/config"
+	"urlshortener/internal/httpapi"
 	"urlshortener/internal/store"
 )
 
@@ -44,13 +45,11 @@ func run() error {
 	defer pool.Close()
 	log.Println("connected to database")
 
-	mux := http.NewServeMux()
-	// Go 1.22+ patterns: "METHOD /path". Other methods on this path get 405 automatically.
-	mux.HandleFunc("GET /healthz", handleHealth)
+	api := httpapi.New(store.New(pool))
 
 	srv := &http.Server{
 		Addr:              cfg.Addr(),
-		Handler:           mux,
+		Handler:           api.Routes(),
 		ReadHeaderTimeout: 5 * time.Second,
 		ReadTimeout:       10 * time.Second,
 		WriteTimeout:      10 * time.Second,
@@ -91,9 +90,4 @@ func run() error {
 
 	log.Println("server stopped")
 	return nil
-}
-
-func handleHealth(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-	w.Write([]byte(`{"status":"ok"}`))
 }
