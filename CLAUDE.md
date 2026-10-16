@@ -11,6 +11,7 @@ A URL shortener REST API built in Go to practice idiomatic Go. The goals are
   struct tags, zero values, package layout, and so on.
 - **Do not start the next step until I say so.**
 - I'm learning Go, so pick clarity over cleverness and explain any non-obvious choice.
+- **Never run git commands that change history or state** (commit, branch, push, etc.). I handle git myself.
 
 ## Tech constraints
 
