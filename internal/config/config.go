@@ -9,13 +9,20 @@ import (
 
 // Config holds all runtime settings. The zero value is not usable; call Load.
 type Config struct {
-	Port int
+	Port        int
+	DatabaseURL string
 }
 
 // Load reads settings from the environment, falling back to defaults.
+// DATABASE_URL is required.
 func Load() (Config, error) {
 	cfg := Config{
-		Port: 8080,
+		Port:        8080,
+		DatabaseURL: os.Getenv("DATABASE_URL"),
+	}
+
+	if cfg.DatabaseURL == "" {
+		return Config{}, fmt.Errorf("config: DATABASE_URL is required (e.g. postgres:///urlshortener)")
 	}
 
 	if v := os.Getenv("PORT"); v != "" {

@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"urlshortener/internal/config"
+	"urlshortener/internal/store"
 )
 
 // shutdownTimeout is how long in-flight requests get to finish after Ctrl+C.
@@ -35,6 +36,13 @@ func run() error {
 	// ctx is cancelled when the process receives Ctrl+C (SIGINT) or SIGTERM.
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
+
+	pool, err := store.NewPool(ctx, cfg.DatabaseURL)
+	if err != nil {
+		return err
+	}
+	defer pool.Close()
+	log.Println("connected to database")
 
 	mux := http.NewServeMux()
 	// Go 1.22+ patterns: "METHOD /path". Other methods on this path get 405 automatically.
