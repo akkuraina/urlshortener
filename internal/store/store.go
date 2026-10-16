@@ -106,6 +106,32 @@ func (s *Store) Visit(ctx context.Context, code string) (shortener.URL, error) {
 	return u, nil
 }
 
+// Update points code at a new longURL and bumps updated_at.
+// It returns shortener.ErrNotFound if no such code exists.
+func (s *Store) Update(ctx context.Context, code, longURL string) (shortener.URL, error) {
+	const q = `UPDATE urls SET url = $2, updated_at = now()
+		WHERE short_code = $1 RETURNING ` + columns
+
+	u, err := scanURL(s.pool.QueryRow(ctx, q, code, longURL))
+	if err != nil {
+		return shortener.URL{}, notFoundOr(err, "updating url")
+	}
+	return u, nil
+}
+
+// Delete removes code. It returns shortener.ErrNotFound if no such code exists.
+func (s *Store) Delete(ctx context.Context, code string) error {
+	tag, err := s.pool.Exec(ctx, `DELETE FROM urls WHERE short_code = $1`, code)
+	if err != nil {
+		return fmt.Errorf("deleting url: %w", err)
+	}
+	// Exec returns no rows, so "not found" shows up as zero rows affected.
+	if tag.RowsAffected() == 0 {
+		return shortener.ErrNotFound
+	}
+	return nil
+}
+
 // scanURL reads one row in the order given by columns.
 func scanURL(row pgx.Row) (shortener.URL, error) {
 	var u shortener.URL

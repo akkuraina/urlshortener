@@ -82,6 +82,53 @@ func TestNotFound(t *testing.T) {
 	if _, err := s.Visit(t.Context(), "tmissing"); !errors.Is(err, shortener.ErrNotFound) {
 		t.Errorf("Visit error = %v, want ErrNotFound", err)
 	}
+	if _, err := s.Update(t.Context(), "tmissing", "https://example.com"); !errors.Is(err, shortener.ErrNotFound) {
+		t.Errorf("Update error = %v, want ErrNotFound", err)
+	}
+	if err := s.Delete(t.Context(), "tmissing"); !errors.Is(err, shortener.ErrNotFound) {
+		t.Errorf("Delete error = %v, want ErrNotFound", err)
+	}
+}
+
+func TestUpdate(t *testing.T) {
+	s := newTestStore(t)
+	s.newCode = fixedCodes("tupdate1")
+	deleteAfter(t, s, "tupdate1")
+
+	created, err := s.Create(t.Context(), "https://example.com/old")
+	if err != nil {
+		t.Fatalf("Create: %v", err)
+	}
+
+	updated, err := s.Update(t.Context(), "tupdate1", "https://example.com/new")
+	if err != nil {
+		t.Fatalf("Update: %v", err)
+	}
+	if updated.LongURL != "https://example.com/new" {
+		t.Errorf("LongURL = %q, want the new URL", updated.LongURL)
+	}
+	if updated.ID != created.ID || !updated.CreatedAt.Equal(created.CreatedAt) {
+		t.Errorf("Update changed ID or CreatedAt: before %+v, after %+v", created, updated)
+	}
+	if !updated.UpdatedAt.After(created.UpdatedAt) {
+		t.Errorf("UpdatedAt = %v, want later than %v", updated.UpdatedAt, created.UpdatedAt)
+	}
+}
+
+func TestDelete(t *testing.T) {
+	s := newTestStore(t)
+	s.newCode = fixedCodes("tdelete1")
+	deleteAfter(t, s, "tdelete1") // in case the test fails before Delete runs
+
+	if _, err := s.Create(t.Context(), "https://example.com"); err != nil {
+		t.Fatalf("Create: %v", err)
+	}
+	if err := s.Delete(t.Context(), "tdelete1"); err != nil {
+		t.Fatalf("Delete: %v", err)
+	}
+	if _, err := s.Get(t.Context(), "tdelete1"); !errors.Is(err, shortener.ErrNotFound) {
+		t.Errorf("Get after Delete error = %v, want ErrNotFound", err)
+	}
 }
 
 func TestVisitIncrements(t *testing.T) {
