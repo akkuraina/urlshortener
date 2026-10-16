@@ -7,6 +7,7 @@ import (
 	"net/http"
 
 	"urlshortener/internal/shortener"
+	"urlshortener/web"
 )
 
 // Store is the storage this package needs. It is defined here, where it is
@@ -33,6 +34,13 @@ func New(store Store) *API {
 // wrapped in middleware.
 func (a *API) Routes() http.Handler {
 	mux := http.NewServeMux()
+
+	// Frontend. "{$}" anchors the pattern, so "GET /{$}" matches only "/",
+	// not every path the way a bare "GET /" would.
+	frontend := web.Handler()
+	mux.Handle("GET /{$}", frontend)
+	mux.Handle("GET /app.js", frontend)
+
 	mux.HandleFunc("GET /healthz", handleHealth)
 	mux.HandleFunc("POST /shorten", a.handleCreate)
 	mux.HandleFunc("GET /shorten/{code}", a.handleGet)

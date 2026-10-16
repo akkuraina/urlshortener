@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>URL Shortener</title>
+  <script src="/app.js" defer></script>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 40rem; margin: 2rem auto; padding: 0 1rem; line-height: 1.5; }
+    form, .row { display: flex; gap: 0.5rem; margin: 0.5rem 0; }
+    input { flex: 1; padding: 0.4rem; font: inherit; }
+    button { padding: 0.4rem 0.9rem; font: inherit; cursor: pointer; }
+    pre { background: #f4f4f4; padding: 1rem; overflow-x: auto; }
+    .error { color: #b00020; }
+  </style>
+</head>
+<body>
+  <h1>URL Shortener</h1>
+
+  <section>
+    <h2>Shorten a URL</h2>
+    <form id="create-form">
+      <input id="create-url" type="url" placeholder="https://www.example.com/some/long/url" required>
+      <button>Shorten</button>
+    </form>
+    <p id="short-link" hidden>Short link: <a id="short-link-a" target="_blank" rel="noopener"></a></p>
+  </section>
+
+  <section>
+    <h2>Manage a short code</h2>
+    <div class="row">
+      <input id="code" placeholder="short code, e.g. abc1234">
+      <button id="stats-btn" type="button">Stats</button>
+      <button id="delete-btn" type="button">Delete</button>
+    </div>
+    <form id="update-form">
+      <input id="update-url" type="url" placeholder="new long URL" required>
+      <button>Update</button>
+    </form>
+  </section>
+
+  <h2>Response</h2>
+  <pre id="output">Nothing yet.</pre>
+</body>
+</html>

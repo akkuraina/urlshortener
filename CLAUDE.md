@@ -61,3 +61,13 @@ web/                      index.html + app.js, served by the Go binary via embed
 | GET    | `/{code}`               | 302 redirect (extra endpoint, used by the frontend) | 404 |
 
 `accessCount` goes up on each `GET /shorten/{code}` and on each redirect.
+
+## Commands
+
+```bash
+export DATABASE_URL=postgres:///urlshortener          # required by the server and store tests
+psql urlshortener -f migrations/0001_create_urls.up.sql   # one-time schema setup
+go run ./cmd/server                                   # http://localhost:8080
+go test ./...                                         # store tests are skipped if DATABASE_URL is unset
+psql urlshortener -X -f scripts/index_experiment.sql  # EXPLAIN demo, fully rolled back
+```
